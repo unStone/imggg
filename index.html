@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <input id="file" type="file" name="file" />
+  <canvas id="myCanvas">抱歉，您的浏览器还不支持canvas。</canvas>
+  <!-- <input id="inputtest" type="file" accept="image/*"/> -->
+</body>
+  <script>
+    
+    const file = document.getElementById('file');
+    console.log('file', file)
+    file.onchange = function(e) {
+      console.log('e', e)
+      console.log('e', e.target.value)
+      console.log('e', e.target.files)
+      console.log('e', e.target.files[0])
+
+      if(!e.target.files[0]) return;
+
+      var reader = new FileReader();
+      reader.onload = putImage2Canvas
+      reader.readAsArrayBuffer(e.target.files[0]);
+    }
+
+    function putImage2Canvas(event) {
+      
+      const arrayBuffer = event.target.result;
+      
+      const util = new Uint8Array(arrayBuffer)
+      console.log('util', util)
+    }
+
+  </script>
+</html>
