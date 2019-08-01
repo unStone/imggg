@@ -3,7 +3,8 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
-  plugins: [
-    new UglifyJSPlugin()
-  ]
+  mode: "production",
+  // optimization: {
+  //   minimizer: [new UglifyJsPlugin()],
+  // },
 });
