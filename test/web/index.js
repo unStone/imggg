@@ -1,4 +1,4 @@
-const getFileType = require('../../dist/bundle.js');
+// const getFileType = require('../../dist/bundle.js');
 
 const file = document.getElementById('file');
 console.log('file', file)
@@ -21,6 +21,7 @@ function putImage2Canvas(event) {
   
   const buffer = new Uint8Array(arrayBuffer)
   
-  console.log('getFileType(buffer)', getFileType(buffer))
-  console.log('util', util)
+  // console.log('getFileType(buffer)', getFileType(buffer))
+  console.log('arrayBuffer', arrayBuffer)
+  // console.log('util', util)
 }
