@@ -1,5 +1,5 @@
-const dataStructure = require('./dataStructure')
-const { readIntN } = require('../../util');
+const { dataStructure, multChunkType } = require('./dataStructure')
+const { readIntN, bufferToString } = require('../../util');
 
 /**
  * 简介：png是一种使用无损压缩的图片格式
@@ -36,64 +36,82 @@ class Png {
     this.init()
   }
 
-  /**
-   * 用于分割 this.buffer 的函数
-   * @param {number} index
-   * @param {number} offset
-   * @return {Array|Buffer}
-   */
-  spliceBuffer(index, offset) {
-    if(this.buffer.length < index + offset) {
-      throw new Error('超出buffer界限');
+  _updateIndex(index) {
+    if(typeof index === 'number') {
+      this.index = index
+    } else {
+      this.index = 0
     }
-
-    // subarray 为node中Buffer的切割方法
-    return this.buffer.subarray ? this.buffer.subarray(index, offset) : this.buffer.splice(index, offset)
   }
 
   /**
    * 用于获取 this.buffer 部分数据的函数
    * @param {number} index
-   * @param {number} offset
+   * @param {number} length
    * @return {Array|Buffer}
    */
-  sliceBuffer(index, offset) {
-    if(this.buffer.length < index + 1 + offset) {
+  sliceBuffer(index=0, length=0) {
+    console.log('index', index, length)
+    if(this.buffer.length < index + length) {
       throw new Error('超出buffer界限');
     }
 
     // subarray 为node中Buffer的切割方法
-    return this.buffer.slice(index, offset)
+    return this.buffer.slice(index, index + length)
   }
 
   init() {
-    this.setHeader();
+    this.addMagicNumber()
+    while(this.index < this.buffer.length) {
+      const type = this.decollateChunk();
+
+      // 部分图片在 IEND 类型后还有脏数据
+      if (type === 'IEND') break;
+    }
+
+    console.log('this.dataList',this.dataList)
   }
 
-  setHeader() {
-    console.log('this.buffer1', this.buffer[0])
-    this.header = this.getHeader();
-    console.log('this.buffer2', this.buffer[0])
-    // this.getChunkLength()
+  /**
+   * 将魔数放到 this.dataList 中去
+   */
+  addMagicNumber() {
+    this.dataList.magicNumber = this.sliceBuffer(this.index, 8);
+    this._updateIndex(this.index + 8);
   }
 
+  /**
+   * 切割各个数据块，并把数据放到 this.dataList 中去
+   */
+  decollateChunk() {
+    // 获取数据块长度Code
+    const chunkLength = this.sliceBuffer(this.index, 4);
+    // 解析数据块中的数据长度
+    const length = readIntN(chunkLength);
+    // 获取数据块类型码Code
+    const ChunkTypeCode = this.sliceBuffer(this.index + 4, 4);
+    // 解析数据块类型
+    const type = bufferToString(ChunkTypeCode);
+    // 获取数据块数据Code
+    // const ChunkData = this.sliceBuffer(this.index + 8, length);
+    // 获取数据块循环冗余检测Code
+    // const CRC = this.sliceBuffer(this.index + chunkLength + 8, 4);
+    // 获取整块数据块
+    const chunkData = this.sliceBuffer(this.index, 12 + length)
+    console.log('chunkLength', chunkLength)
+    console.log('length', length)
+    console.log('ChunkTypeCode', ChunkTypeCode)
+    console.log('type', type)
 
-  getHeader() {
-    return this.spliceBuffer(0, 8)
-  }
+    this._updateIndex(this.index + 12 + length);
 
-  getChunkLength() {
-    let length = readIntN(this.sliceBuffer(0, 4)); // 数据块长度
+    if(multChunkType.indexOf(type) !== -1) {
+      this.dataList[type].push(chunkData)
+    } else {
+      this.dataList[type] = (chunkData)
+    }
 
-    console.log('readIntN', length)
-		if (length < 0) {
-			throw new Error('不合法的数据块长度信息');
-		}
-
-  }
-
-  setChunk() {
-    
+    return type
   }
 }
 

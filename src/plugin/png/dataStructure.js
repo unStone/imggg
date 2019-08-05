@@ -1,5 +1,6 @@
 module.exports = {
   dataStructure: {
+    magicNumber: null,
     // 文件头数据块|单个|必需
     IHDR: null,
     // 基色和白色点数据块|单个|非必需
