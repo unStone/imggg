@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
+    "test": "node test/node/index.js",
     "webpack-dev": "webpack --config build/webpack.dev.js",
     "webpack-prod": "webpack --config build/webpack.prod.js"
   },
